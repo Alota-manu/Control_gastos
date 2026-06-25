@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de gastos</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Panel personal</p>
+          <h1 id="page-title">Control de gastos</h1>
+        </div>
+        <button class="ghost-button" id="clearDataButton" type="button" title="Borrar todos los movimientos">
+          Limpiar datos
+        </button>
+      </section>
+
+      <section class="sync-section" aria-label="Sincronizacion en la nube">
+        <div>
+          <h2>Sincronizacion</h2>
+          <p id="syncStatus">Modo local</p>
+        </div>
+        <form class="sync-form" id="authForm">
+          <label>
+            Email
+            <input id="authEmailInput" type="email" placeholder="tu@email.com" autocomplete="email" />
+          </label>
+          <label>
+            Password
+            <input id="authPasswordInput" type="password" placeholder="Minimo 6 caracteres" autocomplete="current-password" />
+          </label>
+          <button class="primary-button" id="loginButton" type="button">Ingresar</button>
+          <button class="ghost-button" id="signupButton" type="button">Crear cuenta</button>
+          <button class="ghost-button" id="logoutButton" type="button">Cerrar sesion</button>
+        </form>
+      </section>
+
+      <section class="summary-grid" aria-label="Resumen financiero">
+        <article class="summary-card income">
+          <span>Ingresos</span>
+          <strong id="incomeTotal">$0</strong>
+        </article>
+        <article class="summary-card expense">
+          <span>Gastos</span>
+          <strong id="expenseTotal">$0</strong>
+        </article>
+        <article class="summary-card saving">
+          <span>Ahorros</span>
+          <strong id="savingTotal">$0</strong>
+        </article>
+        <article class="summary-card balance">
+          <span>Saldo disponible</span>
+          <strong id="balanceTotal">$0</strong>
+        </article>
+      </section>
+
+      <section class="goals-section" aria-label="Metas del mes">
+        <div class="panel-title">
+          <h2>Metas del mes</h2>
+        </div>
+
+        <form class="goals-form" id="goalsForm">
+          <label>
+            Mes
+            <select id="goalMonthInput">
+              <option value="01">Enero</option>
+              <option value="02">Febrero</option>
+              <option value="03">Marzo</option>
+              <option value="04">Abril</option>
+              <option value="05">Mayo</option>
+              <option value="06">Junio</option>
+              <option value="07">Julio</option>
+              <option value="08">Agosto</option>
+              <option value="09">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </label>
+          <label>
+            Anio
+            <select id="goalYearInput">
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+              <option value="2031">2031</option>
+              <option value="2032">2032</option>
+              <option value="2033">2033</option>
+              <option value="2034">2034</option>
+              <option value="2035">2035</option>
+            </select>
+          </label>
+          <label>
+            Meta ahorro (%)
+            <input id="savingGoalInput" type="number" min="0" max="100" step="1" placeholder="Ej: 20" />
+          </label>
+          <label>
+            Limite gasto (%)
+            <input id="expenseLimitInput" type="number" min="0" max="100" step="1" placeholder="Ej: 70" />
+          </label>
+          <button class="primary-button" type="submit">Guardar metas</button>
+        </form>
+
+        <section class="goals-grid" aria-label="Resumen de metas">
+          <article class="summary-card saving">
+            <span>Ahorro real</span>
+            <strong id="savingGoalActual">0%</strong>
+          </article>
+          <article class="summary-card expense">
+            <span>Gasto real</span>
+            <strong id="expenseGoalActual">0%</strong>
+          </article>
+          <article class="summary-card balance">
+            <span>Falta ahorro</span>
+            <strong id="savingGoalRemaining">$0</strong>
+          </article>
+          <article class="summary-card income">
+            <span>Margen gasto</span>
+            <strong id="expenseGoalMargin">$0</strong>
+          </article>
+        </section>
+
+        <div class="goal-progress-grid">
+          <div class="progress-block" aria-label="Avance de meta de ahorro">
+            <div class="progress-copy">
+              <span id="savingGoalLabel">Ahorro 0% / meta 0%</span>
+              <strong id="savingGoalStatus">0%</strong>
+            </div>
+            <div class="progress-track">
+              <span id="savingGoalBar"></span>
+            </div>
+          </div>
+          <div class="progress-block" aria-label="Uso de limite de gasto">
+            <div class="progress-copy">
+              <span id="expenseGoalLabel">Gasto 0% / limite 0%</span>
+              <strong id="expenseGoalStatus">0%</strong>
+            </div>
+            <div class="progress-track">
+              <span id="expenseGoalBar"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <form class="entry-panel" id="transactionForm">
+          <div class="panel-title">
+            <h2>Nuevo movimiento</h2>
+          </div>
+
+          <label>
+            Tipo
+            <select id="typeInput" required>
+              <option value="income">Ingreso</option>
+              <option value="expense">Gasto</option>
+              <option value="saving">Ahorro</option>
+              <option value="savingWithdrawal">Retiro de ahorro</option>
+            </select>
+          </label>
+
+          <label>
+            Descripcion
+            <select id="descriptionInput" required>
+              <option value="">Selecciona descripcion</option>
+              <option value="Comida">Comida</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Ropa">Ropa</option>
+              <option value="Pago internet Hogar">Pago internet Hogar</option>
+              <option value="Futbol">Futbol</option>
+              <option value="Gym">Gym</option>
+              <option value="Deporte">Deporte</option>
+              <option value="Suscripciones">Suscripciones</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </label>
+
+          <label>
+            Monto
+            <input id="amountInput" type="number" min="1" step="1" placeholder="Ej: 25000" required />
+          </label>
+
+          <label class="conditional-field" id="categoryField">
+            Categoria
+            <select id="categoryInput" required>
+              <option value="">Selecciona categoria</option>
+              <option value="Necesario">Necesario</option>
+              <option value="Importante">Importante</option>
+              <option value="Prescindible">Prescindible</option>
+            </select>
+          </label>
+
+          <label class="payment-method-field" id="paymentMethodField">
+            Metodo de pago
+            <select id="paymentMethodInput" required>
+              <option value="cash">Efectivo</option>
+              <option value="debit">Debito</option>
+              <option value="transfer">Transferencia</option>
+              <option value="credit">Tarjeta de credito</option>
+            </select>
+          </label>
+
+          <label class="credit-only" id="installmentsField">
+            Cuotas
+            <input id="installmentsInput" type="number" min="1" step="1" value="1" />
+          </label>
+
+          <label class="credit-only" id="creditCardField">
+            Tarjeta
+            <select id="creditCardInput"></select>
+          </label>
+
+          <label class="credit-only" id="installmentAmountField">
+            Valor cuota
+            <input id="installmentAmountInput" type="number" min="1" step="1" placeholder="Ej: 20000" />
+          </label>
+
+          <label>
+            Fecha
+            <input id="dateInput" type="date" required />
+          </label>
+
+          <button class="primary-button" type="submit">Agregar movimiento</button>
+        </form>
+
+        <section class="data-panel" aria-label="Detalle de movimientos">
+          <div class="panel-title with-actions">
+            <h2>Movimientos</h2>
+            <select id="filterInput" aria-label="Filtrar movimientos">
+              <option value="all">Todos</option>
+              <option value="income">Ingresos</option>
+              <option value="expense">Gastos</option>
+              <option value="saving">Ahorros</option>
+              <option value="savingWithdrawal">Retiros de ahorro</option>
+            </select>
+          </div>
+
+          <div class="progress-block" aria-label="Relacion entre gastos e ingresos">
+            <div class="progress-copy">
+              <span>Uso de ingresos</span>
+              <strong id="usageLabel">0%</strong>
+            </div>
+            <div class="progress-track">
+              <span id="usageBar"></span>
+            </div>
+          </div>
+
+          <section class="report-block" aria-label="Grafica de gastos mensuales">
+            <div class="panel-title with-actions">
+              <h2>Gastos recientes</h2>
+              <span id="monthlyAverageLabel">$0 promedio</span>
+            </div>
+            <canvas id="monthlyExpenseChart" height="220"></canvas>
+          </section>
+
+          <section class="filters-panel" aria-label="Filtros de movimientos">
+            <label>
+              Mes
+              <select id="filterMonthInput">
+                <option value="all">Todos</option>
+                <option value="01">Enero</option>
+                <option value="02">Febrero</option>
+                <option value="03">Marzo</option>
+                <option value="04">Abril</option>
+                <option value="05">Mayo</option>
+                <option value="06">Junio</option>
+                <option value="07">Julio</option>
+                <option value="08">Agosto</option>
+                <option value="09">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+            </label>
+            <label>
+              Anio
+              <select id="filterYearInput">
+                <option value="all">Todos</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+                <option value="2031">2031</option>
+                <option value="2032">2032</option>
+                <option value="2033">2033</option>
+                <option value="2034">2034</option>
+                <option value="2035">2035</option>
+              </select>
+            </label>
+            <label>
+              Descripcion
+              <select id="filterDescriptionInput">
+                <option value="all">Todas</option>
+                <option value="Sueldo">Sueldo</option>
+                <option value="Abono extra">Abono extra</option>
+                <option value="Transferencias">Transferencias</option>
+                <option value="Devoluciones">Devoluciones</option>
+                <option value="Comida">Comida</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Ropa">Ropa</option>
+                <option value="Pago internet Hogar">Pago internet Hogar</option>
+                <option value="Futbol">Futbol</option>
+                <option value="Gym">Gym</option>
+                <option value="Deporte">Deporte</option>
+                <option value="Suscripciones">Suscripciones</option>
+                <option value="Fondo emergencia">Fondo emergencia</option>
+                <option value="Ahorro empresa">Ahorro empresa</option>
+                <option value="Ahorro deportes">Ahorro deportes</option>
+                <option value="Ahorro hogar">Ahorro hogar</option>
+                <option value="Ahorro varios">Ahorro varios</option>
+                <option value="Otros">Otros</option>
+              </select>
+            </label>
+            <label>
+              Categoria
+              <select id="filterCategoryInput">
+                <option value="all">Todas</option>
+                <option value="Necesario">Necesario</option>
+                <option value="Importante">Importante</option>
+                <option value="Prescindible">Prescindible</option>
+              </select>
+            </label>
+            <button class="ghost-button" id="resetFiltersButton" type="button">Limpiar filtros</button>
+          </section>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Detalle</th>
+                  <th>Categoria</th>
+                  <th>Tipo</th>
+                  <th>Metodo</th>
+                  <th>Monto</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="transactionTable"></tbody>
+            </table>
+          </div>
+
+          <p class="empty-state" id="emptyState">Todavia no hay movimientos registrados.</p>
+        </section>
+      </section>
+
+      <section class="savings-section" aria-label="Fondos de ahorro">
+        <div class="panel-title">
+          <h2>Fondos de ahorro</h2>
+        </div>
+        <div class="savings-funds-grid" id="savingsFundsGrid"></div>
+      </section>
+
+      <section class="credit-section" aria-label="Tarjeta de credito">
+        <div class="panel-title">
+          <h2>Tarjeta de credito</h2>
+        </div>
+
+        <form class="credit-settings" id="creditCardForm">
+          <label>
+            Nombre de la tarjeta
+            <input id="cardNameInput" type="text" placeholder="Ej: Visa banco" />
+          </label>
+          <label>
+            Cupo total
+            <input id="cardLimitInput" type="number" min="0" step="1" placeholder="Ej: 1000000" />
+          </label>
+          <label>
+            Dia de facturacion
+            <input id="billingDayInput" type="number" min="1" max="31" step="1" placeholder="Ej: 15" />
+          </label>
+          <label>
+            Dia de pago
+            <input id="paymentDayInput" type="number" min="1" max="31" step="1" placeholder="Ej: 5" />
+          </label>
+          <button class="primary-button" type="submit">Agregar tarjeta</button>
+        </form>
+
+        <div class="table-wrap cards-history">
+          <table>
+            <thead>
+              <tr>
+                <th>Tarjeta</th>
+                <th>Cupo</th>
+                <th>Usado</th>
+                <th>Disponible</th>
+                <th>Pago mes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="creditCardsTable"></tbody>
+          </table>
+        </div>
+
+        <section class="credit-summary-grid" aria-label="Resumen de tarjeta de credito">
+          <article class="summary-card balance">
+            <span>Cupo total</span>
+            <strong id="cardLimitTotal">$0</strong>
+          </article>
+          <article class="summary-card expense">
+            <span>Cupo usado</span>
+            <strong id="cardUsedTotal">$0</strong>
+          </article>
+          <article class="summary-card income">
+            <span>Cupo disponible</span>
+            <strong id="cardAvailableTotal">$0</strong>
+          </article>
+          <article class="summary-card saving">
+            <span>Pago estimado del mes</span>
+            <strong id="cardMonthlyTotal">$0</strong>
+          </article>
+        </section>
+
+        <div class="progress-block" aria-label="Uso de cupo de tarjeta">
+          <div class="progress-copy">
+            <span id="cardStatusLabel">Uso de cupo</span>
+            <strong id="cardUsageLabel">0%</strong>
+          </div>
+          <div class="progress-track">
+            <span id="cardUsageBar"></span>
+          </div>
+        </div>
+
+        <form class="credit-payment-form" id="creditPaymentForm">
+          <label>
+            Tarjeta
+            <select id="creditPaymentCardInput" required></select>
+          </label>
+          <label>
+            Monto pagado
+            <input id="creditPaymentAmountInput" type="number" min="1" step="1" placeholder="Ej: 120000" required />
+          </label>
+          <label>
+            Fecha de pago
+            <input id="creditPaymentDateInput" type="date" required />
+          </label>
+          <label>
+            Detalle
+            <input id="creditPaymentNoteInput" type="text" placeholder="Ej: Pago desde cuenta corriente" />
+          </label>
+          <button class="primary-button" type="submit">Registrar pago</button>
+        </form>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Detalle</th>
+                <th>Tarjeta</th>
+                <th>Categoria</th>
+                <th>Cuotas</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody id="creditTable"></tbody>
+          </table>
+        </div>
+
+        <p class="empty-state" id="creditEmptyState">No hay gastos con tarjeta de credito.</p>
+
+        <div class="table-wrap payment-history">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Detalle</th>
+                <th>Tarjeta</th>
+                <th>Monto pagado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="creditPaymentTable"></tbody>
+          </table>
+        </div>
+
+        <p class="empty-state" id="creditPaymentEmptyState">No hay pagos de tarjeta registrados.</p>
+      </section>
+    </main>
+
+    <template id="transactionRowTemplate">
+      <tr>
+        <td data-cell="date"></td>
+        <td data-cell="description"></td>
+        <td data-cell="category"></td>
+        <td><span data-cell="type"></span></td>
+        <td data-cell="paymentMethod"></td>
+        <td data-cell="amount"></td>
+        <td>
+          <button class="icon-button" type="button" title="Eliminar movimiento" data-action="delete">&times;</button>
+        </td>
+      </tr>
+    </template>
+
+    <template id="creditRowTemplate">
+      <tr>
+        <td data-cell="date"></td>
+        <td data-cell="description"></td>
+        <td data-cell="card"></td>
+        <td data-cell="category"></td>
+        <td data-cell="installments"></td>
+        <td data-cell="amount"></td>
+      </tr>
+    </template>
+
+    <template id="creditPaymentRowTemplate">
+      <tr>
+        <td data-cell="date"></td>
+        <td data-cell="note"></td>
+        <td data-cell="card"></td>
+        <td data-cell="amount"></td>
+        <td>
+          <button class="icon-button" type="button" title="Eliminar pago" data-action="delete-card-payment">&times;</button>
+        </td>
+      </tr>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
