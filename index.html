@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Control de gastos</title>
-    <link rel="stylesheet" href="styles.css?v=20260625-login-fix" />
+    <link rel="stylesheet" href="styles.css?v=20260626-sueldo-periodo" />
   </head>
   <body>
     <section class="auth-screen" id="authScreen" aria-label="Ingreso a la cuenta">
@@ -48,19 +48,19 @@
 
       <section class="summary-grid" aria-label="Resumen financiero">
         <article class="summary-card income">
-          <span>Ingresos</span>
+          <span>Ingresos desde sueldo</span>
           <strong id="incomeTotal">$0</strong>
         </article>
         <article class="summary-card expense">
-          <span>Gastos</span>
+          <span>Gastos desde sueldo</span>
           <strong id="expenseTotal">$0</strong>
         </article>
         <article class="summary-card saving">
-          <span>Ahorros</span>
+          <span>Ahorros acumulados</span>
           <strong id="savingTotal">$0</strong>
         </article>
         <article class="summary-card balance">
-          <span>Saldo disponible</span>
+          <span>Saldo disponible total</span>
           <strong id="balanceTotal">$0</strong>
         </article>
       </section>
@@ -260,7 +260,7 @@
 
           <section class="report-block" aria-label="Grafica de gastos mensuales">
             <div class="panel-title with-actions">
-              <h2>Gastos recientes</h2>
+              <h2 id="monthlyChartTitle">Gastos recientes</h2>
               <span id="monthlyAverageLabel">$0 promedio</span>
             </div>
             <canvas id="monthlyExpenseChart" height="220"></canvas>
@@ -318,6 +318,7 @@
                 <option value="Gym">Gym</option>
                 <option value="Deporte">Deporte</option>
                 <option value="Suscripciones">Suscripciones</option>
+                <option value="Pago mantencion credito">Pago mantencion credito</option>
                 <option value="Fondo emergencia">Fondo emergencia</option>
                 <option value="Ahorro empresa">Ahorro empresa</option>
                 <option value="Ahorro deportes">Ahorro deportes</option>
@@ -531,7 +532,7 @@
     </template>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js?v=20260625-login-fix"></script>
-    <script src="app.js?v=20260625-login-fix"></script>
+    <script src="supabase-config.js?v=20260626-sueldo-periodo"></script>
+    <script src="app.js?v=20260626-sueldo-periodo"></script>
   </body>
 </html>

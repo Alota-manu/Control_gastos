@@ -11,6 +11,8 @@ const formatter = new Intl.NumberFormat("es-CL", {
   maximumFractionDigits: 0,
 });
 
+const CREDIT_MAINTENANCE_DESCRIPTION = "Pago mantencion credito";
+
 const DESCRIPTION_OPTIONS = {
   income: ["Sueldo", "Abono extra", "Transferencias", "Devoluciones", "Otros"],
   expense: [
@@ -23,6 +25,7 @@ const DESCRIPTION_OPTIONS = {
     "Gym",
     "Deporte",
     "Suscripciones",
+    CREDIT_MAINTENANCE_DESCRIPTION,
     "Otros",
   ],
   saving: ["Fondo emergencia", "Ahorro empresa", "Ahorro deportes", "Ahorro hogar", "Ahorro varios"],
@@ -65,6 +68,7 @@ const filterDescriptionInput = document.querySelector("#filterDescriptionInput")
 const filterCategoryInput = document.querySelector("#filterCategoryInput");
 const resetFiltersButton = document.querySelector("#resetFiltersButton");
 const monthlyExpenseChart = document.querySelector("#monthlyExpenseChart");
+const monthlyChartTitle = document.querySelector("#monthlyChartTitle");
 const monthlyAverageLabel = document.querySelector("#monthlyAverageLabel");
 const goalsForm = document.querySelector("#goalsForm");
 const goalMonthInput = document.querySelector("#goalMonthInput");
@@ -156,12 +160,13 @@ form.addEventListener("submit", (event) => {
   const amount = isCreditExpense() && installmentAmount > 0 ? installments * installmentAmount : enteredAmount;
   const transaction = {
     id: createId(),
+    createdAt: new Date().toISOString(),
     type: typeInput.value,
     description: descriptionInput.value.trim(),
     amount,
     originalAmount: enteredAmount,
     category: typeInput.value === "expense" ? categoryInput.value.trim() : "Sin categoria",
-    paymentMethod: typeInput.value === "income" || typeInput.value === "expense" ? paymentMethodInput.value : "none",
+    paymentMethod: getSelectedPaymentMethod(),
     cardId: isCreditExpense() ? creditCardInput.value : null,
     installments,
     installmentAmount: isCreditExpense() ? installmentAmount : null,
@@ -197,6 +202,7 @@ typeInput.addEventListener("change", () => {
   populatePaymentMethodOptions(typeInput.value);
   togglePaymentControls();
 });
+descriptionInput.addEventListener("change", togglePaymentControls);
 paymentMethodInput.addEventListener("change", togglePaymentControls);
 filterInput.addEventListener("change", render);
 filterMonthInput.addEventListener("change", render);
@@ -349,7 +355,7 @@ clearDataButton.addEventListener("click", () => {
 });
 
 function render() {
-  const totals = transactions.reduce(
+  const accumulatedTotals = transactions.reduce(
     (accumulator, transaction) => {
       if (accumulator[transaction.type] !== undefined) {
         accumulator[transaction.type] += transaction.amount;
@@ -359,13 +365,24 @@ function render() {
     },
     { income: 0, expense: 0, saving: 0, savingWithdrawal: 0 },
   );
+  const payPeriodTotals = getCurrentPayPeriodTransactions()
+    .reduce(
+      (accumulator, transaction) => {
+        if (accumulator[transaction.type] !== undefined) {
+          accumulator[transaction.type] += transaction.amount;
+        }
 
-  const netSavings = totals.saving - totals.savingWithdrawal;
-  const balance = totals.income - totals.expense - totals.saving + totals.savingWithdrawal;
-  const usage = totals.income > 0 ? Math.min((totals.expense / totals.income) * 100, 100) : 0;
+        return accumulator;
+      },
+      { income: 0, expense: 0, saving: 0, savingWithdrawal: 0 },
+    );
 
-  incomeTotal.textContent = formatter.format(totals.income);
-  expenseTotal.textContent = formatter.format(totals.expense);
+  const netSavings = accumulatedTotals.saving - accumulatedTotals.savingWithdrawal;
+  const balance = accumulatedTotals.income - accumulatedTotals.expense - accumulatedTotals.saving + accumulatedTotals.savingWithdrawal;
+  const usage = payPeriodTotals.income > 0 ? Math.min((payPeriodTotals.expense / payPeriodTotals.income) * 100, 100) : 0;
+
+  incomeTotal.textContent = formatter.format(payPeriodTotals.income);
+  expenseTotal.textContent = formatter.format(payPeriodTotals.expense);
   savingTotal.textContent = formatter.format(netSavings);
   balanceTotal.textContent = formatter.format(balance);
   usageLabel.textContent = `${Math.round(usage)}%`;
@@ -567,9 +584,10 @@ function renderCreditPayments() {
 function renderMonthlyExpenseChart() {
   const context = monthlyExpenseChart.getContext("2d");
   const months = getRecentMonths(6);
+  const chartType = getChartType();
   const values = months.map((month) => {
     return transactions
-      .filter((transaction) => transaction.type === "expense" && getMonthKey(transaction.date) === month.key)
+      .filter((transaction) => transaction.type === chartType && getMonthKey(transaction.date) === month.key)
       .reduce((sum, transaction) => sum + transaction.amount, 0);
   });
   const average = values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
@@ -632,7 +650,7 @@ function renderMonthlyExpenseChart() {
     const y = padding.top + chartHeight - barHeight;
     const isCurrentMonth = months[index].key === getMonthKey(new Date().toISOString().slice(0, 10));
 
-    context.fillStyle = isCurrentMonth ? "#b64242" : "#285e8f";
+    context.fillStyle = isCurrentMonth ? getCurrentMonthChartColor(chartType) : getChartColor(chartType);
     context.fillRect(x, y, barWidth, barHeight || 2);
 
     context.fillStyle = "#17211b";
@@ -641,7 +659,34 @@ function renderMonthlyExpenseChart() {
   });
 
   context.textAlign = "left";
+  monthlyChartTitle.textContent = `${getTypeLabel(chartType)}s recientes`;
   monthlyAverageLabel.textContent = `${formatter.format(average)} promedio`;
+}
+
+function getChartType() {
+  return filterInput.value === "all" ? "expense" : filterInput.value;
+}
+
+function getChartColor(type) {
+  const colors = {
+    income: "#147a5c",
+    expense: "#285e8f",
+    saving: "#8a5b12",
+    savingWithdrawal: "#285e8f",
+  };
+
+  return colors[type] ?? "#285e8f";
+}
+
+function getCurrentMonthChartColor(type) {
+  const colors = {
+    income: "#1d9a73",
+    expense: "#b64242",
+    saving: "#b7791f",
+    savingWithdrawal: "#4c78a8",
+  };
+
+  return colors[type] ?? "#b64242";
 }
 
 function createSupabaseClient() {
@@ -1063,7 +1108,19 @@ function getInstallmentAmountValue() {
 }
 
 function isCreditExpense() {
-  return typeInput.value === "expense" && paymentMethodInput.value === "credit";
+  return typeInput.value === "expense" && paymentMethodInput.value === "credit" && !isCreditMaintenanceExpense();
+}
+
+function isCreditMaintenanceExpense() {
+  return typeInput.value === "expense" && descriptionInput.value === CREDIT_MAINTENANCE_DESCRIPTION;
+}
+
+function getSelectedPaymentMethod() {
+  if (isCreditMaintenanceExpense()) {
+    return "debit";
+  }
+
+  return typeInput.value === "income" || typeInput.value === "expense" ? paymentMethodInput.value : "none";
 }
 
 function toggleInstallmentsField() {
@@ -1080,16 +1137,19 @@ function toggleInstallmentsField() {
 function togglePaymentControls() {
   const shouldShowPaymentMethod = typeInput.value === "income" || typeInput.value === "expense";
   const shouldShowCategory = typeInput.value === "expense";
+  const shouldForceDebit = isCreditMaintenanceExpense();
 
   categoryField.classList.toggle("visible", shouldShowCategory);
   categoryInput.disabled = !shouldShowCategory;
   categoryInput.required = shouldShowCategory;
   paymentMethodField.classList.toggle("visible", shouldShowPaymentMethod);
-  paymentMethodInput.disabled = !shouldShowPaymentMethod;
+  paymentMethodInput.disabled = !shouldShowPaymentMethod || shouldForceDebit;
   paymentMethodInput.required = shouldShowPaymentMethod;
 
   if (!shouldShowPaymentMethod) {
     paymentMethodInput.value = "none";
+  } else if (shouldForceDebit) {
+    paymentMethodInput.value = "debit";
   }
 
   toggleInstallmentsField();
@@ -1161,6 +1221,28 @@ function getCreditTransactionAmount(transaction) {
 
 function isSameMonth(dateValue, referenceDate) {
   return getMonthKey(dateValue) === `${referenceDate.getFullYear()}-${String(referenceDate.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getCurrentPayPeriodTransactions() {
+  const latestSalary = transactions
+    .filter((transaction) => transaction.type === "income" && transaction.description === "Sueldo")
+    .sort((a, b) => getTransactionTimelineValue(b) - getTransactionTimelineValue(a))[0];
+
+  if (!latestSalary) {
+    return transactions;
+  }
+
+  const salaryStart = getTransactionTimelineValue(latestSalary);
+
+  return transactions.filter((transaction) => getTransactionTimelineValue(transaction) >= salaryStart);
+}
+
+function getTransactionTimelineValue(transaction) {
+  if (transaction.createdAt) {
+    return Date.parse(transaction.createdAt);
+  }
+
+  return Date.parse(`${transaction.date}T00:00:00`);
 }
 
 function getMonthKey(dateValue) {
