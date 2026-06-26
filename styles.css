@@ -35,9 +35,62 @@ select {
 }
 
 .app-shell {
+  display: flex;
+  flex-direction: column;
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
   padding: 32px 0;
+}
+
+.app-shell.is-hidden,
+.auth-screen.is-hidden {
+  display: none;
+}
+
+.auth-screen {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: min(520px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 28px;
+}
+
+.auth-card h1 {
+  margin-bottom: 12px;
+}
+
+.auth-copy {
+  margin: 0 0 16px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.auth-status {
+  margin: 0 0 18px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 800;
+  padding: 12px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .topbar {
@@ -46,6 +99,20 @@ select {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 22px;
+  order: 0;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-actions p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .eyebrow {
@@ -77,6 +144,7 @@ h2 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 16px;
+  order: 1;
 }
 
 .summary-card {
@@ -122,11 +190,11 @@ h2 {
   grid-template-columns: 360px minmax(0, 1fr);
   gap: 16px;
   align-items: start;
+  order: 2;
 }
 
 .entry-panel,
 .data-panel,
-.sync-section,
 .goals-section,
 .savings-section,
 .credit-section {
@@ -147,28 +215,6 @@ h2 {
   padding: 20px;
 }
 
-.sync-section {
-  display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(0, 3fr);
-  gap: 16px;
-  align-items: end;
-  margin-bottom: 16px;
-  padding: 20px;
-}
-
-.sync-section p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-weight: 800;
-}
-
-.sync-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto auto auto;
-  gap: 12px;
-  align-items: end;
-}
-
 .goals-section,
 .savings-section,
 .credit-section {
@@ -177,7 +223,15 @@ h2 {
 }
 
 .goals-section {
-  margin-bottom: 16px;
+  order: 4;
+}
+
+.credit-section {
+  order: 3;
+}
+
+.savings-section {
+  order: 5;
 }
 
 .goals-form {
@@ -485,7 +539,6 @@ th:last-child {
 @media (max-width: 900px) {
   .summary-grid,
   .workspace,
-  .sync-section,
   .goals-grid,
   .goal-progress-grid,
   .savings-funds-grid,
@@ -502,7 +555,6 @@ th:last-child {
   }
 
   .goals-form,
-  .sync-form,
   .filters-panel,
   .credit-payment-form {
     grid-template-columns: 1fr 1fr;
@@ -520,8 +572,22 @@ th:last-child {
     flex-direction: column;
   }
 
+  .topbar-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .ghost-button {
     width: 100%;
+  }
+
+  .auth-card {
+    padding: 22px;
+  }
+
+  .auth-actions {
+    grid-template-columns: 1fr;
   }
 
   .summary-card {
@@ -538,7 +604,6 @@ th:last-child {
   }
 
   .goals-form,
-  .sync-form,
   .filters-panel,
   .credit-payment-form {
     grid-template-columns: 1fr;

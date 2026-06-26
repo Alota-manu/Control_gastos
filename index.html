@@ -7,35 +7,43 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <section class="topbar" aria-labelledby="page-title">
-        <div>
-          <p class="eyebrow">Panel personal</p>
-          <h1 id="page-title">Control de gastos</h1>
-        </div>
-        <button class="ghost-button" id="clearDataButton" type="button" title="Borrar todos los movimientos">
-          Limpiar datos
-        </button>
-      </section>
+    <section class="auth-screen" id="authScreen" aria-label="Ingreso a la cuenta">
+      <div class="auth-card">
+        <p class="eyebrow">Panel personal</p>
+        <h1>Control de gastos</h1>
+        <p class="auth-copy">Ingresa con tu cuenta para sincronizar tus datos en PC y celular.</p>
+        <p class="auth-status" id="syncStatus">Modo local</p>
 
-      <section class="sync-section" aria-label="Sincronizacion en la nube">
-        <div>
-          <h2>Sincronizacion</h2>
-          <p id="syncStatus">Modo local</p>
-        </div>
-        <form class="sync-form" id="authForm">
+        <form class="auth-form" id="authForm">
           <label>
             Email
             <input id="authEmailInput" type="email" placeholder="tu@email.com" autocomplete="email" />
           </label>
           <label>
-            Password
+            Contrasena
             <input id="authPasswordInput" type="password" placeholder="Minimo 6 caracteres" autocomplete="current-password" />
           </label>
-          <button class="primary-button" id="loginButton" type="button">Ingresar</button>
-          <button class="ghost-button" id="signupButton" type="button">Crear cuenta</button>
-          <button class="ghost-button" id="logoutButton" type="button">Cerrar sesion</button>
+          <div class="auth-actions">
+            <button class="primary-button" id="loginButton" type="button">Ingresar</button>
+            <button class="ghost-button" id="signupButton" type="button">Crear cuenta</button>
+          </div>
         </form>
+      </div>
+    </section>
+
+    <main class="app-shell is-hidden" id="appShell">
+      <section class="topbar" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Panel personal</p>
+          <h1 id="page-title">Control de gastos</h1>
+        </div>
+        <div class="topbar-actions">
+          <p id="userStatus">Sesion local</p>
+          <button class="ghost-button" id="logoutButton" type="button">Cerrar sesion</button>
+          <button class="ghost-button" id="clearDataButton" type="button" title="Borrar todos los movimientos">
+            Limpiar datos
+          </button>
+        </div>
       </section>
 
       <section class="summary-grid" aria-label="Resumen financiero">

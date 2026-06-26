@@ -99,7 +99,11 @@ const balanceTotal = document.querySelector("#balanceTotal");
 const usageLabel = document.querySelector("#usageLabel");
 const usageBar = document.querySelector("#usageBar");
 const clearDataButton = document.querySelector("#clearDataButton");
+const authScreen = document.querySelector("#authScreen");
+const appShell = document.querySelector("#appShell");
+const userStatus = document.querySelector("#userStatus");
 const syncStatus = document.querySelector("#syncStatus");
+const authForm = document.querySelector("#authForm");
 const authEmailInput = document.querySelector("#authEmailInput");
 const authPasswordInput = document.querySelector("#authPasswordInput");
 const loginButton = document.querySelector("#loginButton");
@@ -209,6 +213,11 @@ resetFiltersButton.addEventListener("click", () => {
 });
 
 loginButton.addEventListener("click", () => {
+  signInWithSupabase();
+});
+
+authForm.addEventListener("submit", (event) => {
+  event.preventDefault();
   signInWithSupabase();
 });
 
@@ -675,7 +684,7 @@ async function initializeCloudSync() {
     if (currentUser) {
       await loadCloudState();
     } else {
-      updateSyncStatus("Sesion cerrada. Modo local.");
+      updateSyncStatus("Sesion cerrada. Inicia sesion para abrir la app.");
     }
   });
 }
@@ -739,12 +748,16 @@ function ensureSupabaseReady() {
 function updateAuthUi() {
   const isConfigured = Boolean(supabaseClient);
   const isLoggedIn = Boolean(currentUser);
+  const shouldRequireLogin = isConfigured;
 
   authEmailInput.disabled = !isConfigured || isLoggedIn;
   authPasswordInput.disabled = !isConfigured || isLoggedIn;
   loginButton.disabled = !isConfigured || isLoggedIn;
   signupButton.disabled = !isConfigured || isLoggedIn;
   logoutButton.disabled = !isConfigured || !isLoggedIn;
+  authScreen.classList.toggle("is-hidden", !shouldRequireLogin || isLoggedIn);
+  appShell.classList.toggle("is-hidden", shouldRequireLogin && !isLoggedIn);
+  userStatus.textContent = isLoggedIn ? `Cuenta: ${currentUser.email ?? ""}` : "Sesion local";
 
   if (isLoggedIn) {
     authEmailInput.value = currentUser.email ?? "";
@@ -754,6 +767,9 @@ function updateAuthUi() {
 
 function updateSyncStatus(message) {
   syncStatus.textContent = message;
+  if (!appShell.classList.contains("is-hidden")) {
+    userStatus.textContent = message;
+  }
 }
 
 async function loadCloudState() {
