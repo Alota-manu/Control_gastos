@@ -748,15 +748,14 @@ function ensureSupabaseReady() {
 function updateAuthUi() {
   const isConfigured = Boolean(supabaseClient);
   const isLoggedIn = Boolean(currentUser);
-  const shouldRequireLogin = isConfigured;
 
   authEmailInput.disabled = !isConfigured || isLoggedIn;
   authPasswordInput.disabled = !isConfigured || isLoggedIn;
   loginButton.disabled = !isConfigured || isLoggedIn;
   signupButton.disabled = !isConfigured || isLoggedIn;
   logoutButton.disabled = !isConfigured || !isLoggedIn;
-  authScreen.classList.toggle("is-hidden", !shouldRequireLogin || isLoggedIn);
-  appShell.classList.toggle("is-hidden", shouldRequireLogin && !isLoggedIn);
+  authScreen.classList.toggle("is-hidden", isLoggedIn);
+  appShell.classList.toggle("is-hidden", !isLoggedIn);
   userStatus.textContent = isLoggedIn ? `Cuenta: ${currentUser.email ?? ""}` : "Sesion local";
 
   if (isLoggedIn) {

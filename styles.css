@@ -28,6 +28,10 @@ body {
   font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
 
+body:has(.auth-screen:not(.is-hidden)) {
+  background: #0f1728;
+}
+
 button,
 input,
 select {
@@ -50,46 +54,109 @@ select {
 .auth-screen {
   display: grid;
   min-height: 100vh;
+  min-height: 100dvh;
   place-items: center;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(20, 122, 92, 0.18), transparent 34%),
+    #0f1728;
+  color: #f8fafc;
   padding: 24px;
 }
 
 .auth-card {
-  width: min(520px, 100%);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
-  padding: 28px;
+  width: min(448px, 100%);
+  padding: 8px 0;
 }
 
 .auth-card h1 {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  font-size: clamp(2rem, 7vw, 2.8rem);
+  text-align: center;
 }
 
 .auth-copy {
-  margin: 0 0 16px;
-  color: var(--muted);
+  margin: 0 0 22px;
+  color: #b6c4d7;
   line-height: 1.45;
+  text-align: center;
+}
+
+.auth-card .eyebrow {
+  color: #1bc48d;
+  text-align: center;
+}
+
+.auth-card label {
+  color: #dce7f5;
+}
+
+.auth-card input {
+  min-height: 54px;
+  border-color: #33445c;
+  border-radius: 8px;
+  background: #1e2a3d;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.auth-card input::placeholder {
+  color: #aab7c9;
+}
+
+.auth-card input:focus {
+  border-color: #1bc48d;
+  box-shadow: 0 0 0 3px rgba(27, 196, 141, 0.18);
+}
+
+.auth-card .primary-button,
+.auth-card .ghost-button {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.auth-card .primary-button {
+  background: #1bc48d;
+  color: #061116;
+}
+
+.auth-card .ghost-button {
+  border: 1px solid #33445c;
+  background: transparent;
+  color: #f8fafc;
+}
+
+.auth-card .primary-button:disabled,
+.auth-card .ghost-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.auth-card .primary-button:hover,
+.auth-card .ghost-button:hover {
+  filter: brightness(1.04);
 }
 
 .auth-status {
   margin: 0 0 18px;
+  border: 1px solid #25364d;
   border-radius: 8px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: rgba(30, 42, 61, 0.82);
+  color: #dce7f5;
   font-weight: 800;
   padding: 12px;
+  line-height: 1.45;
 }
 
 .auth-form {
   display: grid;
-  gap: 14px;
+  gap: 18px;
 }
 
 .auth-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
